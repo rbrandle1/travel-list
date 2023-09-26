@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 
-const initialItems = [
-	{ id: 1, description: 'Passports', quantity: 2, packed: false },
-	{ id: 2, description: 'Socks', quantity: 12, packed: true },
-	{ id: 3, description: 'Charger', quantity: 1, packed: false },
-];
+// const initialItems = [
+// 	{ id: 1, description: 'Passports', quantity: 2, packed: false },
+// 	{ id: 2, description: 'Socks', quantity: 12, packed: true },
+// 	{ id: 3, description: 'Charger', quantity: 1, packed: false },
+// ];
 
 const Logo = () => {
 	return <h1>🏝️ Far Away 🧳</h1>;
 };
 
-const Form = () => {
+const Form = ({ onHandleItems }) => {
 	const [description, setDescription] = useState('');
 	const [quantity, setQuantity] = useState(1);
 
@@ -21,6 +21,9 @@ const Form = () => {
 
 		const newItem = { description, quantity, packed: false, id: Date.now() };
 		console.log('✨  newItem ~', newItem);
+
+		onHandleItems(newItem);
+
 		setDescription('');
 		setQuantity(1);
 	};
@@ -46,25 +49,26 @@ const Form = () => {
 	);
 };
 
-const PackingList = () => {
+const PackingList = ({ items, onDeleteItems, onToggleItems }) => {
 	return (
 		<div className='list'>
 			<ul>
-				{initialItems.map((item) => (
-					<Item item={item} key={item.id} />
+				{items.map((item) => (
+					<Item item={item} key={item.id} onDeleteItems={onDeleteItems} onToggleItems={onToggleItems} />
 				))}
 			</ul>
 		</div>
 	);
 };
 
-const Item = ({ item }) => {
+const Item = ({ item, onDeleteItems, onToggleItems }) => {
 	return (
 		<li>
+			<input type='checkbox' value={item.packed} onChange={() => onToggleItems(item.id)} />
 			<span style={item.packed ? { textDecoration: 'line-through' } : {}}>
 				{item.quantity} {item.description}
 			</span>
-			<button>❌</button>
+			<button onClick={() => onDeleteItems(item.id)}>❌</button>
 		</li>
 	);
 };
@@ -78,11 +82,25 @@ const Stats = () => {
 };
 
 const App = () => {
+	const [items, setItems] = useState([]);
+
+	const handleAddItems = (item) => {
+		setItems((items) => [...items, item]);
+	};
+
+	const handleDeleteItems = (id) => {
+		setItems(items.filter((item) => item.id !== id));
+	};
+
+	const handleToggleItems = (id) => {
+		setItems(items.map((item) => (item.id === id ? { ...item, packed: !item.packed } : item)));
+	};
+
 	return (
 		<div className='app'>
 			<Logo />
-			<Form />
-			<PackingList />
+			<Form onHandleItems={handleAddItems} />
+			<PackingList items={items} onDeleteItems={handleDeleteItems} onToggleItems={handleToggleItems} />
 			<Stats />
 		</div>
 	);
